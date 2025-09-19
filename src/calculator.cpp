@@ -29,55 +29,10 @@ double cumulativeNormalDistribution(double x) {
 }
 
 
-void testCumulativeNormalDistribution() {
-    // Select a few input values
-    double x[] = {
-        -3, 
-        -1, 
-        0.0, 
-        0.5, 
-        2.1 
-    };
-
-    // Output computed by Mathematica
-    double y[] = { 
-        0.00134989803163, 
-        0.158655253931, 
-        0.5, 
-        0.691462461274, 
-        0.982135579437 
-    };
-
-        int numTests = sizeof(x)/sizeof(double);
-
-    double maxError = 0.0;
-    for (int i = 0; i < numTests; ++i)
-    {
-        double error = fabs(y[i] - cumulativeNormalDistribution(x[i]));
-        if (error > maxError)
-            maxError = error;
-    }
-
-        cout << "Maximum error: " << maxError << "\n";
-} 
-
-
 pair<double, double> calculateD1D2(double S_null, double K, double r, double T, double sigma) {
     double d1 = (log(S_null / K) + (r + 0.5 * pow(sigma, 2)) * T) / (sigma * sqrt(T));
     double d2 = d1 - sigma * sqrt(T);
     return make_pair(d1, d2);
-}
-
-
-void testCalculateD1D2() {
-    double S_null = 100.0; // Current stock price
-    double K = 100.0;      // Strike price
-    double r = 0.05;       // Risk-free interest rate
-    double T = 1.0;        // Time to expiration in years
-    double sigma = 0.2;    // Volatility
-
-    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
-    cout << "d1: " << d1 << ", d2: " << d2 << "\n";
 }
 
 
@@ -87,40 +42,85 @@ double calculateCallPrice(double S_null, double K, double r, double T, double si
 }
 
 
-void testCalculateCallPrice() {
-    double S_null = 100.0; // Current stock price
-    double K = 100.0;      // Strike price
-    double r = 0.05;       // Risk-free interest rate
-    double T = 1.0;        // Time to expiration in years
-    double sigma = 0.2;    // Volatility
-
-    double callPrice = calculateCallPrice(S_null, K, r, T, sigma);
-    cout << "Call Price: " << callPrice << "\n";
-}
-
-
 double calculatePutPrice(double S_null, double K, double r, double T, double sigma) {
     auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
     return K * exp(-r * T) * cumulativeNormalDistribution(-d2) - S_null * cumulativeNormalDistribution(-d1);
 }
 
 
-void testCalculatePutPrice() {
-    double S_null = 100.0; // Current stock price
-    double K = 100.0;      // Strike price
-    double r = 0.05;       // Risk-free interest rate
-    double T = 1.0;        // Time to expiration in years
-    double sigma = 0.2;    // Volatility
-
-    double putPrice = calculatePutPrice(S_null, K, r, T, sigma);
-    cout << "Put Price: " << putPrice << "\n";
+double normalProbabilityDensity(double x) {
+    return (1.0 / sqrt(2 * M_PI)) * exp(-0.5 * pow(x, 2));
 }
 
 
-// int main() {
-//     testCumulativeNormalDistribution();
-//     testCalculateD1D2();
-//     testCalculateCallPrice();
-//     testCalculatePutPrice();
-//     return 0;
-// }
+// Calculating greeks
+double calculateDeltaCall(double S_null, double K, double r, double T, double sigma) {
+    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    return cumulativeNormalDistribution(d1);
+}
+
+
+double calculateDeltaPut(double S_null, double K, double r, double T, double sigma) {
+    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    return cumulativeNormalDistribution(d1) - 1;
+}
+
+
+double calculateGammaInternalHelper(double S_null, double K, double r, double T, double sigma) {
+    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    return normalProbabilityDensity(d1) / (S_null * sigma * sqrt(T));
+}
+
+
+double calculateGammaCall(double S_null, double K, double r, double T, double sigma) {
+    return calculateGammaInternalHelper(S_null, K, r, T, sigma);
+}
+
+
+double calculateGammaPut(double S_null, double K, double r, double T, double sigma) {
+    return calculateGammaInternalHelper(S_null, K, r, T, sigma);
+}
+
+
+double calculateVegaInternalHelper(double S_null, double K, double r, double T, double sigma) {
+    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    return S_null * normalProbabilityDensity(d1) * sqrt(T);
+}
+
+
+double calculateVegaCall(double S_null, double K, double r, double T, double sigma) {
+    return calculateVegaInternalHelper(S_null, K, r, T, sigma);
+}
+
+
+double calculateVegaPut(double S_null, double K, double r, double T, double sigma) {
+    return calculateVegaInternalHelper(S_null, K, r, T, sigma);
+}
+
+
+double calculateThetaCall(double S_null, double K, double r, double T, double sigma) {
+    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    double term1 = - (S_null * normalProbabilityDensity(d1) * sigma) / (2 * sqrt(T));
+    double term2 = r * K * exp(-r * T) * cumulativeNormalDistribution(d2);
+    return term1 - term2;
+}
+
+
+double calculateThetaPut(double S_null, double K, double r, double T, double sigma) {
+    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    double term1 = - (S_null * normalProbabilityDensity(d1) * sigma) / (2 * sqrt(T));
+    double term2 = r * K * exp(-r * T) * cumulativeNormalDistribution(-d2);
+    return term1 + term2;
+}
+
+
+double calculateRhoCall(double S_null, double K, double r, double T, double sigma) {
+    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    return K * T * exp(-r * T) * cumulativeNormalDistribution(d2);
+}
+
+
+double calculateRhoPut(double S_null, double K, double r, double T, double sigma) {
+    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    return -K * T * exp(-r * T) * cumulativeNormalDistribution(-d2);
+}
