@@ -1,28 +1,6 @@
 {
-  "C_Cpp.default.cppStandard": "c++20",
-  "C_Cpp.default.intelliSenseMode": "windows-msvc-x64",
-  "C_Cpp.default.compilerPath": "C:/Program Files/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.37.32822/bin/Hostx64/x64/cl.exe",
   "files.associations": {
-    "*.hpp": "cpp",
     "iostream": "cpp",
-    "vector": "cpp",
-    "memory": "cpp",
-    "functional": "cpp",
-    "algorithm": "cpp",
-    "cmath": "cpp",
-    "random": "cpp",
-    "optional": "cpp",
-    "string": "cpp",
-    "iomanip": "cpp"
-  },
-  "cmake.buildDirectory": "${workspaceFolder}/build",
-  "cmake.configureOnOpen": true,
-  "cmake.buildBeforeRun": true,
-  "terminal.integrated.defaultProfile.windows": "Command Prompt",
-  "editor.formatOnSave": true,
-  "editor.tabSize": 4,
-  "editor.insertSpaces": true,
-  "C_Cpp.formatting": "vcFormat",
-  "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true
+    "ostream": "cpp"
+  }
 }
