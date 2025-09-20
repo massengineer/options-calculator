@@ -1,0 +1,37 @@
+# Build directories
+build/
+bin/
+out/
+Debug/
+Release/
+x64/
+
+# Compiled files
+*.exe
+*.obj
+*.o
+*.dll
+*.so
+*.dylib
+
+# VS Code specific
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Test output
+test_runner
+*.gcno
+*.gcda
+*.gcov
+
+# Project specific executables
+calculator
+calculator.exe
+test_runner.exe
