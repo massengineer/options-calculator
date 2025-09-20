@@ -16,10 +16,18 @@ double calculateCallPrice(double S_null, double K, double r, double T, double si
 // Function to calculate the price of a European put option
 double calculatePutPrice(double S_null, double K, double r, double T, double sigma);
 
-// Test functions
-void testCumulativeNormalDistribution();
-void testCalculateD1D2();
-void testCalculateCallPrice();
-void testCalculatePutPrice();
+// Function to calculate the normal probability density function
+double normalProbabilityDensity(double x);
+
+// Functions to calculate the Greeks for call options
+double calculateDeltaCall(double S_null, double K, double r, double T, double sigma);
+double calculateGammaCall(double S_null, double K, double r, double T, double sigma);
+double calculateVegaCall(double S_null, double K, double r, double T, double sigma);
+double calculateRhoCall(double S_null, double K, double r, double T, double sigma);
+// Functions to calculate the Greeks for put options
+double calculateDeltaPut(double S_null, double K, double r, double T, double sigma);
+double calculateGammaPut(double S_null, double K, double r, double T, double sigma);
+double calculateVegaPut(double S_null, double K, double r, double T, double sigma);
+double calculateRhoPut(double S_null, double K, double r, double T, double sigma);
 
 #endif // CALCULATOR_H

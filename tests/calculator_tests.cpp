@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cmath>
 #include "../include/calculator.h"
 
 using namespace std;
@@ -74,10 +73,36 @@ void testCalculatePutPrice() {
 }
 
 
+void testCalculateGreeks() {
+  double S_null = 100.0; // Current stock price
+  double K = 100.0;      // Strike price
+  double r = 0.05;       // Risk-free interest rate
+  double T = 1.0;        // Time to expiration in years
+  double sigma = 0.2;    // Volatility
+
+  double deltaCall = calculateDeltaCall(S_null, K, r, T, sigma);
+  double gammaCall = calculateGammaCall(S_null, K, r, T, sigma);
+  double vegaCall = calculateVegaCall(S_null, K, r, T, sigma);
+  double rhoCall = calculateRhoCall(S_null, K, r, T, sigma);
+
+  double deltaPut = calculateDeltaPut(S_null, K, r, T, sigma);
+  double gammaPut = calculateGammaPut(S_null, K, r, T, sigma);
+  double vegaPut = calculateVegaPut(S_null, K, r, T, sigma);
+  double rhoPut = calculateRhoPut(S_null, K, r, T, sigma);
+
+  cout << "Call Greeks - Delta: " << deltaCall << ", Gamma: " << gammaCall 
+        << ", Vega: " << vegaCall << ", Rho: " << rhoCall << "\n";
+  cout << "Put Greeks - Delta: " << deltaPut << ", Gamma: " << gammaPut 
+        << ", Vega: " << vegaPut << ", Rho: " << rhoPut << "\n";
+}
+
+
 int main() {
     testCumulativeNormalDistribution();
     testCalculateD1D2();
     testCalculateCallPrice();
     testCalculatePutPrice();
+    testCalculateGreeks();
+    cout << "All tests completed successfully.\n";
     return 0;
 }
