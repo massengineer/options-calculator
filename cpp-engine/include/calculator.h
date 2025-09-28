@@ -4,6 +4,7 @@
 #include <utility> // For std::pair
 #include <cmath>   // For mathematical functions
 
+
 // Function to approximate the cumulative normal distribution
 double cumulativeNormalDistribution(double x);
 

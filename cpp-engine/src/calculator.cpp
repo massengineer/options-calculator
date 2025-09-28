@@ -3,7 +3,7 @@
 
 using namespace std;
 
-
+extern "C" {
 double cumulativeNormalDistribution(double x) {
     // Approximation of the cumulative normal distribution function
     
@@ -124,3 +124,5 @@ double calculateRhoPut(double S_null, double K, double r, double T, double sigma
     auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
     return -K * T * exp(-r * T) * cumulativeNormalDistribution(-d2);
 }
+
+} // extern "C"
