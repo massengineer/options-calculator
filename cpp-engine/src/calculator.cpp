@@ -139,4 +139,14 @@ double calculateRhoPut(double S_null, double K, double r, double T, double sigma
     return -K * T * exp(-r * T) * cumulativeNormalDistribution(-d2);
 }
 
+double calculateCallPnL(double K, double S_T, double purchase_price) {
+    double payoff = max(0.0, S_T - K);
+    return payoff - purchase_price;
+}
+
+double calculatePutPnL(double K, double S_T, double purchase_price) {
+    double payoff = max(0.0, K - S_T);
+    return payoff - purchase_price;
+}
+
 } // extern "C"

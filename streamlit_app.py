@@ -69,6 +69,7 @@ with st.sidebar:
     time_to_maturity = st.number_input("Time to Maturity (Years)", value=1.0)
     volatility = st.number_input("Volatility (σ)", value=0.2)
     interest_rate = st.number_input("Risk-Free Interest Rate", value=0.05)
+    purchase_price = st.number_input("Purchase Price", value=10.0)
 
     st.markdown("---")
     calculate_btn = st.button('Heatmap Parameters')
@@ -129,6 +130,12 @@ with st.sidebar:
     clib.calculateRhoPut.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
     clib.calculateRhoPut.restype = ctypes.c_double
     
+    clib.calculateCallPnL.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+    clib.calculateCallPnL.restype = ctypes.c_double
+    
+    clib.calculatePutPnL.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+    clib.calculatePutPnL.restype = ctypes.c_double
+    
     ######################################
     # Black-Scholes Model Implementation #
     ######################################
@@ -163,7 +170,8 @@ def get_option_data(current_price, strike, interest_rate, time_to_maturity, vola
         "rho_put": rho_put,
     }
 
-def plot_heatmap(current_price, strike, interest_rate, time_to_maturity, volatility, spot_range, vol_range):
+
+def plot_black_scholes_heatmap(current_price, strike, interest_rate, time_to_maturity, volatility, spot_range, vol_range):
     call_prices = np.zeros((len(vol_range), len(spot_range)))
     put_prices = np.zeros((len(vol_range), len(spot_range)))
     
@@ -186,6 +194,27 @@ def plot_heatmap(current_price, strike, interest_rate, time_to_maturity, volatil
     
     return call_prices, put_prices
 
+
+def plot_pnl_heatmap(strike, spot_T, purchase_price, spot_range, vol_range):
+    call_pnls = np.zeros((len(vol_range), len(spot_range)))
+    put_pnls = np.zeros((len(vol_range), len(spot_range)))
+        
+    for i in range(len(vol_range)):
+        for j, spot_T in enumerate(spot_range):
+            call_pnls[i, j] = clib.calculateCallPnL(
+                strike,
+                spot_T,
+                purchase_price
+            )
+            put_pnls[i, j] = clib.calculatePutPnL(
+                strike,
+                spot_T,
+                purchase_price
+            )
+    
+    return call_pnls, put_pnls
+
+
 # Main Page for Output Display
 st.title("Black-Scholes Pricing Model")
 
@@ -196,6 +225,7 @@ input_data = {
     "Time to Maturity (Years)": [f"{time_to_maturity:.2f}"],
     "Volatility (σ)": [f"{volatility:.2f}"],
     "Risk-Free Interest Rate": [f"{interest_rate:.2f}"],
+    "Purchase Price": [f"{purchase_price:.2f}"],
 }
 input_df = pd.DataFrame(input_data)
 st.table(input_df)
@@ -230,18 +260,27 @@ with col2:
 
 st.markdown("")
 st.title("Options Price - Interactive Heatmap")
-st.info("Explore how option prices fluctuate with varying 'Spot Prices and Volatility' levels using interactive heatmap parameters, all while maintaining a constant 'Strike Price'.")
+st.info("Discover how option prices fluctuate with varying 'Spot Prices and Volatility' levels using interactive heatmap parameters, all while maintaining a constant 'Strike Price'. Then analyse the P&L heatmaps based on your 'Purchase Price'.")
 
 # Interactive Sliders and Heatmaps for Call and Put Options
 col1, col2 = st.columns([1,1], gap="small")
 
 # Calculate the heatmap data
-call_prices, put_prices = plot_heatmap(
+call_prices, put_prices = plot_black_scholes_heatmap(
     current_price,
     strike,
     interest_rate,
     time_to_maturity,
     volatility,
+    spot_range,
+    vol_range
+)
+
+# Calculate P&L heatmap data (assuming purchase price is the current call/put price)
+call_pnls, put_pnls = plot_pnl_heatmap(
+    strike,
+    current_price,  # Assuming spot_T is current price for simplicity
+    purchase_price,
     spot_range,
     vol_range
 )
@@ -266,6 +305,15 @@ with col1:
     greeks_df["Call"] = greeks_df["Call"].apply(lambda x: f"{x:.4f}")
     st.table(greeks_df)
     
+    st.subheader("Call P&L Heatmap")
+    # Create heatmap for call P&L
+    fig_call_pnl, ax_call_pnl = plt.subplots()
+    sns.heatmap(call_pnls, xticklabels=np.round(spot_range,2), yticklabels=np.round(vol_range,2), ax=ax_call_pnl, cmap='RdYlGn',
+    annot=True, fmt=".1f", center=0)
+    ax_call_pnl.set_xlabel('Spot Price')
+    ax_call_pnl.set_ylabel('Volatility')
+    st.pyplot(fig_call_pnl)
+    
 
 with col2:
     st.subheader("Put Price Heatmap")
@@ -286,3 +334,12 @@ with col2:
     greeks_df = pd.DataFrame(greeks_data)
     greeks_df["Put"] = greeks_df["Put"].apply(lambda x: f"{x:.4f}")
     st.table(greeks_df)
+    
+    st.subheader("Put P&L Heatmap")
+    # Create heatmap for put P&L
+    fig_put_pnl, ax_put_pnl = plt.subplots()
+    sns.heatmap(put_pnls, xticklabels=np.round(spot_range,2), yticklabels=np.round(vol_range,2), ax=ax_put_pnl, cmap='RdYlGn',
+    annot=True, fmt=".1f", center=0)
+    ax_put_pnl.set_xlabel('Spot Price')
+    ax_put_pnl.set_ylabel('Volatility')
+    st.pyplot(fig_put_pnl)

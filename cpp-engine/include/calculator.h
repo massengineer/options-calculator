@@ -32,4 +32,8 @@ double calculateGammaPut(double S_null, double K, double r, double T, double sig
 double calculateVegaPut(double S_null, double K, double r, double T, double sigma);
 double calculateRhoPut(double S_null, double K, double r, double T, double sigma);
 
+// Function to calculate P&L
+double calculateCallPnL(double K, double S_T, double purchase_price);
+double calculatePutPnL(double K, double S_T, double purchase_price);
+
 #endif // CALCULATOR_H
