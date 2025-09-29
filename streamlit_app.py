@@ -191,11 +191,11 @@ st.title("Black-Scholes Pricing Model")
 
 # Table of Inputs
 input_data = {
-    "Current Asset Price": [current_price],
-    "Strike Price": [strike],
-    "Time to Maturity (Years)": [time_to_maturity],
-    "Volatility (σ)": [volatility],
-    "Risk-Free Interest Rate": [interest_rate],
+    "Current Asset Price": [f"{current_price:.2f}"],
+    "Strike Price": [f"{strike:.2f}"],
+    "Time to Maturity (Years)": [f"{time_to_maturity:.2f}"],
+    "Volatility (σ)": [f"{volatility:.2f}"],
+    "Risk-Free Interest Rate": [f"{interest_rate:.2f}"],
 }
 input_df = pd.DataFrame(input_data)
 st.table(input_df)
