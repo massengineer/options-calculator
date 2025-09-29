@@ -9,7 +9,8 @@
 double cumulativeNormalDistribution(double x);
 
 // Function to calculate d1 and d2 for Black-Scholes formula
-std::pair<double, double> calculateD1D2(double S_null, double K, double r, double T, double sigma);
+double calculateD1(double S_null, double K, double r, double T, double sigma);
+double calculateD2(double S_null, double K, double r, double T, double sigma, double d1);
 
 // Function to calculate the price of a European call option
 double calculateCallPrice(double S_null, double K, double r, double T, double sigma);

@@ -133,19 +133,20 @@ with st.sidebar:
     # Black-Scholes Model Implementation #
     ######################################
     
-def get_option_data(current_price, strike, time_to_maturity, volatility, interest_rate):
-    call_price = clib.calculateCallPrice(current_price, strike, time_to_maturity, volatility, interest_rate)
-    put_price = clib.calculatePutPrice(current_price, strike, time_to_maturity, volatility, interest_rate)
-    delta_call = clib.calculateDeltaCall(current_price, strike, time_to_maturity, volatility, interest_rate)
-    delta_put = clib.calculateDeltaPut(current_price, strike, time_to_maturity, volatility, interest_rate)
-    gamma_call = clib.calculateGammaCall(current_price, strike, time_to_maturity, volatility, interest_rate)
-    gamma_put = clib.calculateGammaPut(current_price, strike, time_to_maturity, volatility, interest_rate)
-    vega_call = clib.calculateVegaCall(current_price, strike, time_to_maturity, volatility, interest_rate)
-    vega_put = clib.calculateVegaPut(current_price, strike, time_to_maturity, volatility, interest_rate)
-    theta_call = clib.calculateThetaCall(current_price, strike, time_to_maturity, volatility, interest_rate)
-    theta_put = clib.calculateThetaPut(current_price, strike, time_to_maturity, volatility, interest_rate)
-    rho_call = clib.calculateRhoCall(current_price, strike, time_to_maturity, volatility, interest_rate)
-    rho_put = clib.calculateRhoPut(current_price, strike, time_to_maturity, volatility, interest_rate)
+def get_option_data(current_price, strike, interest_rate, time_to_maturity, volatility):
+    call_price = clib.calculateCallPrice(current_price, strike, interest_rate, time_to_maturity, volatility)
+    put_price = clib.calculatePutPrice(current_price, strike, interest_rate, time_to_maturity, volatility)
+    delta_call = clib.calculateDeltaCall(current_price, strike, interest_rate, time_to_maturity, volatility)
+    delta_put = clib.calculateDeltaPut(current_price, strike, interest_rate, time_to_maturity, volatility)
+    gamma_call = clib.calculateGammaCall(current_price, strike, interest_rate, time_to_maturity, volatility)
+    gamma_put = clib.calculateGammaPut(current_price, strike, interest_rate, time_to_maturity, volatility)
+    vega_call = clib.calculateVegaCall(current_price, strike, interest_rate, time_to_maturity, volatility)
+    vega_put = clib.calculateVegaPut(current_price, strike, interest_rate, time_to_maturity, volatility)
+    theta_call = clib.calculateThetaCall(current_price, strike, interest_rate, time_to_maturity, volatility)
+    theta_put = clib.calculateThetaPut(current_price, strike, interest_rate, time_to_maturity, volatility)
+    rho_call = clib.calculateRhoCall(current_price, strike, interest_rate, time_to_maturity, volatility)
+    rho_put = clib.calculateRhoPut(current_price, strike, interest_rate, time_to_maturity, volatility)
+
     
     return {
         "call_price": call_price,
@@ -159,10 +160,10 @@ def get_option_data(current_price, strike, time_to_maturity, volatility, interes
         "theta_call": theta_call,
         "theta_put": theta_put,
         "rho_call": rho_call,
-        "rho_put": rho_put
+        "rho_put": rho_put,
     }
 
-def plot_heatmap(current_price, strike, time_to_maturity, volatility, interest_rate, spot_range, vol_range):
+def plot_heatmap(current_price, strike, interest_rate, time_to_maturity, volatility, spot_range, vol_range):
     call_prices = np.zeros((len(vol_range), len(spot_range)))
     put_prices = np.zeros((len(vol_range), len(spot_range)))
     
@@ -171,16 +172,16 @@ def plot_heatmap(current_price, strike, time_to_maturity, volatility, interest_r
             call_prices[i, j] = clib.calculateCallPrice(
                 spot,  # current_price 
                 strike,
+                interest_rate,
                 time_to_maturity,
                 vol,   
-                interest_rate
             )
             put_prices[i, j] = clib.calculatePutPrice(
                 spot,  
                 strike,
+                interest_rate,
                 time_to_maturity,
                 vol,   
-                interest_rate
             )
     
     return call_prices, put_prices
@@ -200,7 +201,7 @@ input_df = pd.DataFrame(input_data)
 st.table(input_df)
 
 # Calculate Call and Put values
-call_price, put_price = clib.calculateCallPrice(current_price, strike, time_to_maturity, volatility, interest_rate), clib.calculatePutPrice(current_price, strike, time_to_maturity, volatility, interest_rate)
+call_price, put_price = clib.calculateCallPrice(current_price, strike, interest_rate, time_to_maturity, volatility), clib.calculatePutPrice(current_price, strike, interest_rate, time_to_maturity, volatility)
 
 # Display Call and Put Values in colored tables
 col1, col2 = st.columns([1,1], gap="small")
@@ -238,9 +239,9 @@ col1, col2 = st.columns([1,1], gap="small")
 call_prices, put_prices = plot_heatmap(
     current_price,
     strike,
+    interest_rate,
     time_to_maturity,
     volatility,
-    interest_rate,
     spot_range,
     vol_range
 )
@@ -254,6 +255,17 @@ with col1:
     ax_call.set_xlabel('Spot Price')
     ax_call.set_ylabel('Volatility')
     st.pyplot(fig_call)
+    
+    st.subheader("Call Price Greeks")
+    greeks = get_option_data(current_price, strike, interest_rate, time_to_maturity, volatility)
+    greeks_data = {
+        "Greek": ["Delta", "Gamma", "Vega", "Theta", "Rho"],
+        "Call": [greeks["delta_call"], greeks["gamma_call"], greeks["vega_call"], greeks["theta_call"], greeks["rho_call"]],
+    }
+    greeks_df = pd.DataFrame(greeks_data)
+    greeks_df["Call"] = greeks_df["Call"].apply(lambda x: f"{x:.4f}")
+    st.table(greeks_df)
+    
 
 with col2:
     st.subheader("Put Price Heatmap")
@@ -264,3 +276,13 @@ with col2:
     ax_put.set_xlabel('Spot Price')
     ax_put.set_ylabel('Volatility')
     st.pyplot(fig_put)
+    
+    st.subheader("Put Price Greeks")
+    greeks = get_option_data(current_price, strike, interest_rate, time_to_maturity, volatility)
+    greeks_data = {
+        "Greek": ["Delta", "Gamma", "Vega", "Theta", "Rho"],
+        "Put": [greeks["delta_put"], greeks["gamma_put"], greeks["vega_put"], greeks["theta_put"], greeks["rho_put"]],
+    }
+    greeks_df = pd.DataFrame(greeks_data)
+    greeks_df["Put"] = greeks_df["Put"].apply(lambda x: f"{x:.4f}")
+    st.table(greeks_df)

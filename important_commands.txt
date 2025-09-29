@@ -1,0 +1,5 @@
+ rm calculator.dll
+ 
+ g++ -shared -o calculator.dll src/calculator.cpp -Iinclude
+
+ nm -g calculator.dll | grep calculateD2

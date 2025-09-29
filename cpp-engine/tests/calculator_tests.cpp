@@ -3,7 +3,6 @@
 
 using namespace std;
 
-
 void testCumulativeNormalDistribution() {
     // Select a few input values
     double x[] = {
@@ -44,7 +43,8 @@ void testCalculateD1D2() {
     double T = 1.0;        // Time to expiration in years
     double sigma = 0.2;    // Volatility
 
-    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    double d1 = calculateD1(S_null, K, r, T, sigma);
+    double d2 = calculateD2(S_null, K, r, T, sigma, d1);
     cout << "d1: " << d1 << ", d2: " << d2 << "\n";
 }
 

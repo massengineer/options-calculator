@@ -29,21 +29,27 @@ double cumulativeNormalDistribution(double x) {
 }
 
 
-pair<double, double> calculateD1D2(double S_null, double K, double r, double T, double sigma) {
+double calculateD1(double S_null, double K, double r, double T, double sigma) {
     double d1 = (log(S_null / K) + (r + 0.5 * pow(sigma, 2)) * T) / (sigma * sqrt(T));
-    double d2 = d1 - sigma * sqrt(T);
-    return make_pair(d1, d2);
+    return d1;
+}
+
+
+double calculateD2(double S_null, double K, double r, double T, double sigma, double d1) {
+    return d1 - sigma * sqrt(T); 
 }
 
 
 double calculateCallPrice(double S_null, double K, double r, double T, double sigma) {
-    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    double d1 = calculateD1(S_null, K, r, T, sigma);
+    double d2 = calculateD2(S_null, K, r, T, sigma, d1);
     return S_null * cumulativeNormalDistribution(d1) - K * exp(-r * T) * cumulativeNormalDistribution(d2);
 }
 
 
 double calculatePutPrice(double S_null, double K, double r, double T, double sigma) {
-    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    double d1 = calculateD1(S_null, K, r, T, sigma);
+    double d2 = calculateD2(S_null, K, r, T, sigma, d1);
     return K * exp(-r * T) * cumulativeNormalDistribution(-d2) - S_null * cumulativeNormalDistribution(-d1);
 }
 
@@ -55,19 +61,22 @@ double normalProbabilityDensity(double x) {
 
 // Calculating greeks
 double calculateDeltaCall(double S_null, double K, double r, double T, double sigma) {
-    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    double d1 = calculateD1(S_null, K, r, T, sigma);
+    double d2 = calculateD2(S_null, K, r, T, sigma, d1);
     return cumulativeNormalDistribution(d1);
 }
 
 
 double calculateDeltaPut(double S_null, double K, double r, double T, double sigma) {
-    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    double d1 = calculateD1(S_null, K, r, T, sigma);
+    double d2 = calculateD2(S_null, K, r, T, sigma, d1);
     return cumulativeNormalDistribution(d1) - 1;
 }
 
 
 double calculateGammaInternalHelper(double S_null, double K, double r, double T, double sigma) {
-    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    double d1 = calculateD1(S_null, K, r, T, sigma);
+    double d2 = calculateD2(S_null, K, r, T, sigma, d1);
     return normalProbabilityDensity(d1) / (S_null * sigma * sqrt(T));
 }
 
@@ -83,7 +92,8 @@ double calculateGammaPut(double S_null, double K, double r, double T, double sig
 
 
 double calculateVegaInternalHelper(double S_null, double K, double r, double T, double sigma) {
-    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    double d1 = calculateD1(S_null, K, r, T, sigma);
+    double d2 = calculateD2(S_null, K, r, T, sigma, d1);
     return S_null * normalProbabilityDensity(d1) * sqrt(T);
 }
 
@@ -99,7 +109,8 @@ double calculateVegaPut(double S_null, double K, double r, double T, double sigm
 
 
 double calculateThetaCall(double S_null, double K, double r, double T, double sigma) {
-    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    double d1 = calculateD1(S_null, K, r, T, sigma);
+    double d2 = calculateD2(S_null, K, r, T, sigma, d1);
     double term1 = - (S_null * normalProbabilityDensity(d1) * sigma) / (2 * sqrt(T));
     double term2 = r * K * exp(-r * T) * cumulativeNormalDistribution(d2);
     return term1 - term2;
@@ -107,7 +118,8 @@ double calculateThetaCall(double S_null, double K, double r, double T, double si
 
 
 double calculateThetaPut(double S_null, double K, double r, double T, double sigma) {
-    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    double d1 = calculateD1(S_null, K, r, T, sigma);
+    double d2 = calculateD2(S_null, K, r, T, sigma, d1);
     double term1 = - (S_null * normalProbabilityDensity(d1) * sigma) / (2 * sqrt(T));
     double term2 = r * K * exp(-r * T) * cumulativeNormalDistribution(-d2);
     return term1 + term2;
@@ -115,13 +127,15 @@ double calculateThetaPut(double S_null, double K, double r, double T, double sig
 
 
 double calculateRhoCall(double S_null, double K, double r, double T, double sigma) {
-    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    double d1 = calculateD1(S_null, K, r, T, sigma);
+    double d2 = calculateD2(S_null, K, r, T, sigma, d1);
     return K * T * exp(-r * T) * cumulativeNormalDistribution(d2);
 }
 
 
 double calculateRhoPut(double S_null, double K, double r, double T, double sigma) {
-    auto [d1, d2] = calculateD1D2(S_null, K, r, T, sigma);
+    double d1 = calculateD1(S_null, K, r, T, sigma);
+    double d2 = calculateD2(S_null, K, r, T, sigma, d1);
     return -K * T * exp(-r * T) * cumulativeNormalDistribution(-d2);
 }
 
