@@ -8,6 +8,7 @@ A powerful and user-friendly tool for calculating and analyzing financial option
 - **Payoff Diagrams:** Visualize profit/loss for calls, puts, and custom strategies.
 - **Greeks Calculation:** Compute Delta, Gamma, Theta, Vega, and Rho.
 - **Intuitive UI:** Clean interface for quick input and instant results.
+- **SQL Relational DB I/O Mapping** Maps inputs and outputs to a PostgreSQL Neon DB for further data logging and analysis
 
 ## Use Cases
 
