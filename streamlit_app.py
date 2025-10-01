@@ -4,6 +4,14 @@ import seaborn as sns
 import ctypes
 import pandas as pd
 import matplotlib.pyplot as plt
+from sqlalchemy import text
+
+####################
+# DB configuration #
+####################
+
+# Initialize connection.
+conn = st.connection("neon", type="sql")
 
 ######################
 # Page configuration #
@@ -214,6 +222,19 @@ def plot_pnl_heatmap(strike, spot_T, purchase_price, spot_range, vol_range):
     
     return call_pnls, put_pnls
 
+def log_calculations_to_db(conn, inputs, outputs):
+    log_data = {**inputs, **outputs}
+    columns = ', '.join(log_data.keys())
+    placeholders = ', '.join([f":{col}" for col in log_data.keys()])
+    query = f"INSERT INTO black_scholes_logs ({columns}) VALUES ({placeholders})"
+    
+    try:
+        with conn.session as session:
+            session.execute(text(query), log_data)
+            session.commit()
+        st.success("Calculation logged to database.")
+    except Exception as e:
+        st.error(f"Failed to log calculation to Neon database: {e}")
 
 # Main Page for Output Display
 st.title("Black-Scholes Pricing Model")
@@ -230,8 +251,24 @@ input_data = {
 input_df = pd.DataFrame(input_data)
 st.table(input_df)
 
-# Calculate Call and Put values
-call_price, put_price = clib.calculateCallPrice(current_price, strike, interest_rate, time_to_maturity, volatility), clib.calculatePutPrice(current_price, strike, interest_rate, time_to_maturity, volatility)
+# Calculate Greeks, Call and Put Prices
+greeks_data = get_option_data(current_price, strike, interest_rate, time_to_maturity, volatility)
+call_price = greeks_data["call_price"]
+put_price = greeks_data["put_price"]
+
+# Prepare data for logging and log to DB
+inputs = {
+    "current_price": current_price,
+    "strike": strike,
+    "time_to_maturity": time_to_maturity,
+    "volatility": volatility,
+    "interest_rate": interest_rate,
+    "purchase_price": purchase_price
+}
+
+outputs = greeks_data
+
+log_calculations_to_db(conn, inputs, outputs)
 
 # Display Call and Put Values in colored tables
 col1, col2 = st.columns([1,1], gap="small")

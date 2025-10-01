@@ -35,3 +35,6 @@ test_runner
 calculator
 calculator.exe
 test_runner.exe
+
+# Database files
+.streamlit/secrets.toml
