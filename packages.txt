@@ -1,2 +1,2 @@
 g++
-libm-dev
+libc6-dev
