@@ -80,7 +80,7 @@ try:
     # On Linux (Streamlit Cloud), compile the C++ source into a Shared Object (.so)
     # -fPIC is essential for creating shared libraries
     # -lm links the math library (required for functions like std.sqrt)
-    compile_cmd = "g++ -shared -o cpp-engine/calculator.so cpp-engine/calculator.cpp -fPIC -lm"
+    compile_cmd = "g++ -shared -o cpp-engine/calculator.so cpp-engine/src/calculator.cpp -fPIC -lm"
     # os.system runs the command and returns 0 if successful
     compile_result = os.system(compile_cmd)
     
