@@ -4,6 +4,7 @@ import seaborn as sns
 import ctypes
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 from sqlalchemy import text
 
 ####################
@@ -65,44 +66,42 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Sidebar for User Inputs
-with st.sidebar:
-    st.title("📈 Black-Scholes Options Calculator")
-    st.write("`Created by:`")
-    linkedin_url = "https://www.linkedin.com/in/louis-massingham/"
-    st.markdown(f'<a href="{linkedin_url}" target="_blank" style="text-decoration: none; color: inherit;"><img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" width="25" height="25" style="vertical-align: middle; margin-right: 10px;">`Louis Massingham, London`</a>', unsafe_allow_html=True)
+################################
+# C++ Calculator Engine Config #
+################################
 
-    current_price = st.number_input("Current Asset Price", value=100.0)
-    strike = st.number_input("Strike Price", value=100.0)
-    time_to_maturity = st.number_input("Time to Maturity (Years)", value=1.0)
-    volatility = st.number_input("Volatility (σ)", value=0.2)
-    interest_rate = st.number_input("Risk-Free Interest Rate", value=0.05)
-    purchase_price = st.number_input("Purchase Price", value=10.0)
+# 1. Initialize clib and compilation result globally. This ensures they are always defined.
+clib = None
+compile_result = 1 # Initialize to a non-zero (failure) code
 
-    st.markdown("---")
-    calculate_btn = st.button('Heatmap Parameters')
-    spot_min = st.number_input('Min Spot Price', min_value=0.01, value=current_price*0.8, step=0.01)
-    spot_max = st.number_input('Max Spot Price', min_value=0.01, value=current_price*1.2, step=0.01)
-    vol_min = st.slider('Min Volatility for Heatmap', min_value=0.01, max_value=1.0, value=volatility*0.5, step=0.01)
-    vol_max = st.slider('Max Volatility for Heatmap', min_value=0.01, max_value=1.0, value=volatility*1.5, step=0.01)
+# 2. Compile the C++ code for Linux deployment
+st.info("Attempting to compile C++ engine on the server...")
+try:
+    # On Linux (Streamlit Cloud), compile the C++ source into a Shared Object (.so)
+    # -fPIC is essential for creating shared libraries
+    # -lm links the math library (required for functions like std.sqrt)
+    compile_cmd = "g++ -shared -o cpp-engine/calculator.so cpp-engine/calculator.cpp -fPIC -lm"
+    # os.system runs the command and returns 0 if successful
+    compile_result = os.system(compile_cmd)
     
-    spot_range = np.linspace(spot_min, spot_max, 10)
-    vol_range = np.linspace(vol_min, vol_max, 10)
-    
-    
-    ################################
-    # C++ Calculator Engine Config #
-    ################################
-    
-    # Load the shared library
-    # lib_path = "./cpp-engine/calculator.dll"  # For Windows
-    lib_path = "./cpp-engine/calculator.so"  # For Linux
-    try:
-        clib = ctypes.CDLL(lib_path)
-    except OSError:
-        st.error(f"Could not load the shared library at {lib_path}. Did you compile your C++ code?")
+    if compile_result != 0:
+        st.error(f"C++ compilation failed with error code {compile_result}. Did you include 'g++' in packages.txt?")
+    else:
+        st.success("C++ engine compiled successfully (calculator.so).")
         
-    # Define the argument and return types of C++ functions
+except Exception as e:
+    st.error(f"Error during C++ compilation command execution: {e}")
+
+# 3. Load the shared library
+lib_path = "./cpp-engine/calculator.so"  # Linux path
+try:
+    if compile_result == 0 or os.path.exists(lib_path):
+        clib = ctypes.CDLL(lib_path)
+except OSError:
+    st.error(f"Could not load the options calculator engine ({lib_path}). Please check compilation logs.")
+    
+# Define the argument and return types of C++ functions
+if clib is not None:
     clib.calculateCallPrice.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
     clib.calculateCallPrice.restype = ctypes.c_double
     
@@ -144,6 +143,31 @@ with st.sidebar:
     
     clib.calculatePutPnL.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
     clib.calculatePutPnL.restype = ctypes.c_double
+
+# Sidebar for User Inputs
+with st.sidebar:
+    st.title("📈 Black-Scholes Options Calculator")
+    st.write("`Created by:`")
+    linkedin_url = "https://www.linkedin.com/in/louis-massingham/"
+    st.markdown(f'<a href="{linkedin_url}" target="_blank" style="text-decoration: none; color: inherit;"><img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" width="25" height="25" style="vertical-align: middle; margin-right: 10px;">`Louis Massingham, London`</a>', unsafe_allow_html=True)
+
+    current_price = st.number_input("Current Asset Price", value=100.0)
+    strike = st.number_input("Strike Price", value=100.0)
+    time_to_maturity = st.number_input("Time to Maturity (Years)", value=1.0)
+    volatility = st.number_input("Volatility (σ)", value=0.2)
+    interest_rate = st.number_input("Risk-Free Interest Rate", value=0.05)
+    purchase_price = st.number_input("Purchase Price", value=10.0)
+
+    st.markdown("---")
+    calculate_btn = st.button('Heatmap Parameters')
+    spot_min = st.number_input('Min Spot Price', min_value=0.01, value=current_price*0.8, step=0.01)
+    spot_max = st.number_input('Max Spot Price', min_value=0.01, value=current_price*1.2, step=0.01)
+    vol_min = st.slider('Min Volatility for Heatmap', min_value=0.01, max_value=1.0, value=volatility*0.5, step=0.01)
+    vol_max = st.slider('Max Volatility for Heatmap', min_value=0.01, max_value=1.0, value=volatility*1.5, step=0.01)
+    
+    spot_range = np.linspace(spot_min, spot_max, 10)
+    vol_range = np.linspace(vol_min, vol_max, 10)
+    
     
     ######################################
     # Black-Scholes Model Implementation #
