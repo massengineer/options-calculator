@@ -94,14 +94,15 @@ with st.sidebar:
     # C++ Calculator Engine Config #
     ################################
     
-    # 1. Load the shared library
-    lib_path = "./cpp-engine/calculator.dll"  # For Windows
+    # Load the shared library
+    # lib_path = "./cpp-engine/calculator.dll"  # For Windows
+    lib_path = "./cpp-engine/calculator.so"  # For Linux
     try:
         clib = ctypes.CDLL(lib_path)
     except OSError:
         st.error(f"Could not load the shared library at {lib_path}. Did you compile your C++ code?")
         
-    # 2. Define the argument and return types of C++ functions
+    # Define the argument and return types of C++ functions
     clib.calculateCallPrice.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
     clib.calculateCallPrice.restype = ctypes.c_double
     
