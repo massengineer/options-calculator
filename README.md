@@ -5,7 +5,7 @@ A powerful and user-friendly tool for calculating and analyzing financial option
 ## Features
 
 - **Option Pricing Models:** Supports Black-Scholes and other popular models.
-- **Payoff Diagrams:** Visualize profit/loss for calls, puts, and custom strategies coming soon...
+- **Payoff Diagrams:** Visualize profit/loss for calls, puts, and custom strategies.
 - **Greeks Calculation:** Compute Delta, Gamma, Theta, Vega, and Rho.
 - **Intuitive UI:** Clean interface for quick input and instant results.
 
@@ -15,14 +15,6 @@ A powerful and user-friendly tool for calculating and analyzing financial option
 - **Students:** Learn how option pricing and Greeks work.
 - **Educators:** Demonstrate option strategies in classrooms.
 
-## Contributing
-
-Contributions are welcome! Please open issues or submit pull requests for improvements and new features.
-
 ## License
 
 This project is licensed under the MIT License.
-
----
-
-_Empowering smarter options trading and education._
